@@ -1,0 +1,10 @@
+.venv/
+venv/
+venv
+dataset/
+trained_models/
+models/tomato_normal.h5
+models/
+trained_models/
+*.h5
+*.keras
