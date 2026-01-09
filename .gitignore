@@ -1,7 +1,11 @@
 .venv/
 venv/
 venv
+datasets/
 dataset/
 trained_models/
 *.h5
 *.keras
+.ipynb_checkpoints/
+node_modules/
+__pycache__/
