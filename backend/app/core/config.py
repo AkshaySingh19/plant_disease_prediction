@@ -2,7 +2,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-HF_BASE_URL = ("https://huggingface.co/shikhar0718/plant_disease_prediction/resolve/main")
+HF_BASE_URL = ("https://huggingface.co/shikhar0718/plant_disease_prediction1/resolve/main")
 
 MODEL_DIR = BASE_DIR / "saved_models"
 MODEL_DIR.mkdir(parents=True, exist_ok=True)

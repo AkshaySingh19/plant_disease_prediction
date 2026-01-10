@@ -1,33 +1,57 @@
 import logging
 import numpy as np
+import tensorflow as tf
 
-from app.model_loading.model_loader import MODELS
+from app.model_loading.model_loader import get_model
 
 logger = logging.getLogger(__name__)
 
 
 def predict(crop: str, image_array: np.ndarray) -> dict:
     """
-    Run inference for a given crop and preprocessed image.
+    Run TFLite inference for a given crop and preprocessed image.
+    image_array shape: (1, H, W, C)
     """
 
-    entry = MODELS[crop]
-    model = entry["model"]
-    classes = entry["classes"]
+    # fetch model on-demand
+    model_data = get_model(crop)
 
-    # model prediction
-    preds = model.predict(image_array)
+    interpreter: tf.lite.Interpreter = model_data["interpreter"]
+    classes = model_data["classes"]
 
-    # safety check
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    # dtype safety (VERY IMPORTANT)
+    image_array = image_array.astype(input_details[0]["dtype"])
+
+    # set input tensor
+    interpreter.set_tensor(
+        input_details[0]["index"],
+        image_array
+    )
+
+    # run inference
+    interpreter.invoke()
+
+    # get output
+    preds = interpreter.get_tensor(
+        output_details[0]["index"]
+    )
+
+    # safety checks
     if preds.ndim != 2 or preds.shape[0] != 1:
-        raise ValueError("Invalid prediction output shape from model")
+        raise ValueError(
+            f"Invalid prediction output shape: {preds.shape}"
+        )
 
     confidence = float(np.max(preds))
     class_index = int(np.argmax(preds))
 
-    # label safety
     if class_index >= len(classes):
-        raise IndexError("Predicted class index out of range")
+        raise IndexError(
+            "Predicted class index out of range"
+        )
 
     result = {
         "crop": crop,
@@ -42,3 +66,4 @@ def predict(crop: str, image_array: np.ndarray) -> dict:
     )
 
     return result
+

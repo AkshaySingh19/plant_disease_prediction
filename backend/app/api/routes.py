@@ -3,7 +3,6 @@ from typing import List, Union
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from PIL import Image
 
-from app.model_loading.model_loader import MODELS
 from app.services.predictor import predict
 from app.utils.image_utils import preprocess_image
 from app.core.config import CONFIDENCE_THRESHOLD
@@ -12,6 +11,7 @@ from app.schemas.response import (
     LowConfidenceResponse,
     ErrorResponse,
 )
+from app.model_loading.model_loader import metadata
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ router = APIRouter()
     response_model=List[str],
 )
 def get_supported_crops():
-    return list(MODELS.keys())
+    return list(metadata.root.keys())
 
 
 # --------------------------------------------------
@@ -47,7 +47,8 @@ async def predict_crop(
 ):
     crop = crop.lower()
 
-    if crop not in MODELS:
+    # validate crop using metadata
+    if crop not in metadata.root:
         raise HTTPException(
             status_code=400,
             detail="Invalid crop selected",
@@ -68,6 +69,8 @@ async def predict_crop(
         )
 
     image_array = preprocess_image(image)
+
+    # TFLite prediction (handled internally)
     result = predict(crop, image_array)
 
     if result["confidence"] < CONFIDENCE_THRESHOLD:

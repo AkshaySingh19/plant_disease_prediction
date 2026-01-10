@@ -1,18 +1,20 @@
-from typing import Dict,List
-from pydantic import RootModel,field_validator
+from typing import Dict, List
+from pydantic import RootModel, field_validator
+
 
 class MetadataSchema(RootModel[Dict[str, List[str]]]):
     """
     Schema to validate metadata.json structure.
-
     """
-@field_validator("root")
-@classmethod
-def validate_metadata(cls,value:Dict[str,List[str]]):
-    if not value:
-        raise ValueError("metadata.json can't ")
-    
-    for crop, classes in value.items():
+
+    @field_validator("root")
+    @classmethod
+    def validate_metadata(cls, value: Dict[str, List[str]]):
+        if not value:
+            raise ValueError("metadata.json can't be empty")
+
+        for crop, classes in value.items():
+
             # crop name validation
             if not isinstance(crop, str) or not crop.strip():
                 raise ValueError(f"Invalid crop name: {crop}")
@@ -30,4 +32,4 @@ def validate_metadata(cls,value:Dict[str,List[str]]):
                         f"Invalid class label '{label}' in crop '{crop}'"
                     )
 
-    return value
+        return value
