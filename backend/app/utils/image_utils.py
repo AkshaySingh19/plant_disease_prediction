@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 
-def preprocessing_image(image: Image.Image):
+def preprocess_image(image: Image.Image):
 
     # handles all types of images greyscale , 3 channel ,4 channel ,etc
     image = image.convert("RGB")
