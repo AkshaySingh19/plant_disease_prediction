@@ -3,22 +3,40 @@ import logging
 from pathlib import Path
 from typing import Dict
 
+import requests
 import tensorflow as tf
 
-from app.core.config import MODEL_DIR, METADATA_PATH
+from app.core.config import MODEL_DIR, METADATA_PATH, HF_BASE_URL
 from app.schemas.metadata import MetadataSchema
 
 # Logggin
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+# helper function to download model from hugginface
+def download_file(filename: str) -> Path:
+    target_path = MODEL_DIR / filename
+
+    # use cached file if already downloaded
+    if target_path.exists():
+        logger.info(f"Using cached file: {filename}")
+        return target_path
+
+    url = f"{HF_BASE_URL}/{filename}"
+    logger.info(f"Downloading {filename} from Hugging Face")
+
+    response = requests.get(url, stream=True, timeout=120)
+    response.raise_for_status()
+
+    with open(target_path, "wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            if chunk:
+                f.write(chunk)
+
+    return target_path
+
 
 # Path validation
-if not METADATA_PATH.exists():
-    raise FileNotFoundError(
-        f"metadata.json not found at: {METADATA_PATH}"
-    )
-
 if not MODEL_DIR.exists() or not MODEL_DIR.is_dir():
     raise FileNotFoundError(
         f"saved_models directory not found at: {MODEL_DIR}"
@@ -27,7 +45,10 @@ if not MODEL_DIR.exists() or not MODEL_DIR.is_dir():
 
 # validating metadata.json
 try:
-    with open(METADATA_PATH, "r") as f:
+    # download metadata.json from Hugging Face
+    metadata_path = download_file("metadata.json")
+
+    with open(metadata_path, "r") as f:
         raw_metadata = json.load(f)
 
     metadata = MetadataSchema.model_validate(raw_metadata)
@@ -40,23 +61,26 @@ except Exception:
 # loading model
 MODELS: Dict[str, Dict] = {}
 
+# explicit crop → model filename mapping
+MODEL_FILES = {
+    "apple": "best_apple_model.h5",
+    "grapes": "best_grapes_model.h5",
+    "tomato": "best_tomato_cnn_model.h5",
+    "corn": "corn_best_model.h5",
+    "potato": "potato_best_model.h5",
+}
+
 for crop, classes in metadata.root.items():
     try:
-        # Find model file for this crop
-        model_files = list(MODEL_DIR.glob(f"*{crop}*.h5"))
-
-        if not model_files:
+        if crop not in MODEL_FILES:
             raise FileNotFoundError(
-                f"No .h5 model found for crop '{crop}' in {MODEL_DIR}"
+                f"No model mapping found for crop '{crop}'"
             )
 
-        if len(model_files) > 1:
-            logger.warning(
-                f"Multiple model files found for '{crop}'. "
-                f"Using: {model_files[0].name}"
-            )
+        model_filename = MODEL_FILES[crop]
 
-        model_path: Path = model_files[0]
+        # download model file from Hugging Face
+        model_path: Path = download_file(model_filename)
 
         logger.info(f"Loading model for crop '{crop}' from {model_path.name}")
 
