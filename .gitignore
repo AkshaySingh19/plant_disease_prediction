@@ -9,3 +9,4 @@ trained_models/
 .ipynb_checkpoints/
 node_modules/
 __pycache__/
+saved_models/
