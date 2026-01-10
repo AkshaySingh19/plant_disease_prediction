@@ -8,7 +8,7 @@ python-multipart==0.0.9
 # -----------------------------
 # Deep Learning (CPU only)
 # -----------------------------
-tensorflow-cpu==2.15.0
+tensorflow-cpu==2.20.0
 
 # -----------------------------
 # Image Processing
