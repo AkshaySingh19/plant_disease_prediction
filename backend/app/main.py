@@ -36,7 +36,7 @@ app=FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://plantdiseaseprediction.vercel.app"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
