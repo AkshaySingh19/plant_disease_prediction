@@ -1,6 +1,9 @@
 # -----------------------------
 # Backend (FastAPI)
 # -----------------------------
+
+python-3.10.13
+
 fastapi==0.110.0
 uvicorn[standard]==0.29.0
 python-multipart==0.0.9
@@ -8,7 +11,7 @@ python-multipart==0.0.9
 # -----------------------------
 # Deep Learning (CPU only)
 # -----------------------------
-tensorflow-cpu==2.20.0
+tensorflow-cpu==2.15.0
 
 # -----------------------------
 # Image Processing
