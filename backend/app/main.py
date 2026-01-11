@@ -28,7 +28,8 @@ app=FastAPI(
         - Metadata-driven class mapping to avoid hard-coded labels
         - Clean, modular FastAPI project structure
 
-    Created by: Shikhar Srivastava
+    Created by: Shikhar Srivastava & Akshay Singh
+    
     """,
     version="1.0.0"
 
@@ -36,7 +37,7 @@ app=FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://plantdiseaseprediction.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
